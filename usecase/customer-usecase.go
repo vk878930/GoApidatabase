@@ -3,6 +3,7 @@ package usecase
 //usecase ini digunakan untuk setor semua business logic pada aplikasi
 
 import (
+	"errors"
 	"fmt"
 	"submission-project-enigma-laundry/model"
 	"submission-project-enigma-laundry/repository"
@@ -22,6 +23,15 @@ type CustUseCase interface {
 }
 
 func (cu *custUsecase) CreateNewCust(customer model.Customer) (model.Customer, error) {
+	// Check if the phone number is unique
+	isUnique, err := cu.repo.IsPhoneNumberUnique(customer.Phone)
+	if err != nil {
+		return model.Customer{}, fmt.Errorf("error checking phone number uniqueness: %v", err)
+	}
+	if !isUnique {
+		return model.Customer{}, errors.New("phone number already exists")
+	}
+
 	return cu.repo.CreateNewCust(customer)
 }
 
@@ -35,13 +45,22 @@ func (cu *custUsecase) GetCustByID(id int) (model.Customer, error) {
 
 func (cu *custUsecase) UpdateCustByID(customer model.Customer) (model.Customer, error) {
 
-	//karena data buku tidak pakai maka "_"
-	_, err := cu.repo.GetCustByID(customer.Customer_id)
+	existingCustomer, err := cu.repo.GetCustByID(customer.Customer_id)
 
 	if err != nil {
 		return model.Customer{}, fmt.Errorf("customer with ID %d not found", customer.Customer_id)
 	}
 
+	// Check if the phone number is being updated
+	if customer.Phone != existingCustomer.Phone {
+		isUnique, err := cu.repo.IsPhoneNumberUnique(customer.Phone)
+		if err != nil {
+			return model.Customer{}, fmt.Errorf("error checking phone number uniqueness: %v", err)
+		}
+		if !isUnique {
+			return model.Customer{}, errors.New("phone number already exists")
+		}
+	}
 	return cu.repo.UpdateCustByID(customer)
 }
 

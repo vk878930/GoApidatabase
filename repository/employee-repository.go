@@ -19,6 +19,7 @@ type EmployeeRepository interface {
 	GetEmployeeByID(id int) (model.Employee, error)
 	UpdateEmployeeByID(employee model.Employee) (model.Employee, error)
 	DeleteEmployeeByID(id int) error
+	IsPhoneNumberUnique(phoneNumber string) (bool, error) 
 }
 
 
@@ -58,6 +59,8 @@ func (ep *employeeRepository) GetAllEmployee() ([]model.Employee, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer rows.Close()
+
 		employees = append(employees, employee)
 	}
 	return employees, nil
@@ -94,6 +97,15 @@ func (ep *employeeRepository) DeleteEmployeeByID(id int) error {
 	}
 
 	return nil
+}
+
+func (ep *employeeRepository) IsPhoneNumberUnique(phoneNumber string) (bool, error) {
+	var count int
+	err := ep.db.QueryRow("SELECT COUNT(*) FROM employee WHERE phone = $1", phoneNumber).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count == 0, nil
 }
 
 func NewEmployeeRepository(db *sql.DB) EmployeeRepository {

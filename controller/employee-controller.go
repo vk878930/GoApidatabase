@@ -32,12 +32,13 @@ func (ep *EmployeeController) createNewEmployee (c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
 	}
 
 	employee, err := ep.useCase.CreateNewEmployee(payload)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"err": "Failed to create employee data"})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 
@@ -66,7 +67,7 @@ func (ep *EmployeeController) getEmployeeByID (c *gin.Context) {
 	employee, err := ep.useCase.GetEmployeeByID(id)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"err": "Failed to get Employee by ID"})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 

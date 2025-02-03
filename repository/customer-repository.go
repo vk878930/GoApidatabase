@@ -20,6 +20,8 @@ type CustomerRepository interface {
 	GetCustByID(id int) (model.Customer, error)
 	UpdateCustByID(customer model.Customer) (model.Customer, error)
 	DeleteCustByID(id int) error
+	IsPhoneNumberUnique(phoneNumber string) (bool, error) 
+
 }
 
 /*
@@ -73,6 +75,8 @@ func (cu *customerRepository) GetAllCust() ([]model.Customer, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer rows.Close()
+
 		customers = append(customers, customer)
 	}
 	return customers, nil
@@ -110,6 +114,15 @@ func (cu *customerRepository) DeleteCustByID(id int) error {
 	}
 
 	return nil
+}
+
+func (cu *customerRepository) IsPhoneNumberUnique(phoneNumber string) (bool, error) {
+	var count int
+	err := cu.db.QueryRow("SELECT COUNT(*) FROM customer WHERE phone = $1", phoneNumber).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count == 0, nil
 }
 
 func NewCustRepository(db *sql.DB) CustomerRepository {

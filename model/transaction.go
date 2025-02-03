@@ -22,6 +22,15 @@ type Transaction struct {
 	TotalBill     int           `json:"total_bill"`
 }
 
+type BillDetails struct {
+	ID          int    `json:"id"`          // Primary key ID of the bill details
+	BillID      int    `json:"bill_id"`     // Foreign key ID of the main transaction
+	ProductID   int    `json:"product_id"`  // ID of the product
+	ProductName string `json:"product_name,omitempty"` // Name of the product (optional, for display purposes)
+	ProductPrice int   `json:"product_price"`          // Price of the product
+	Qty         int    `json:"qty"`                    // Quantity of the product in the transaction
+}
+
 // Custom unmarshaling to handle date in "dd-MM-yyyy" format
 func (t *Transaction) UnmarshalJSON(data []byte) error {
 	// Temp struct to help in the unmarshalling process
@@ -59,11 +68,3 @@ func (t *Transaction) UnmarshalJSON(data []byte) error {
 }
 
 
-type BillDetails struct {
-	ID          int    `json:"id"`          // Primary key ID of the bill details
-	BillID      int    `json:"bill_id"`     // Foreign key ID of the main transaction
-	ProductID   int    `json:"product_id"`  // ID of the product
-	ProductName string `json:"product_name,omitempty"` // Name of the product (optional, for display purposes)
-	ProductPrice int   `json:"product_price"`          // Price of the product
-	Qty         int    `json:"qty"`                    // Quantity of the product in the transaction
-}

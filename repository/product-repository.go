@@ -56,6 +56,8 @@ func (pr *productRepository) GetAllProduct() ([]model.Product, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer rows.Close()
+
 		products = append(products, product)
 	}
 

@@ -29,7 +29,7 @@ func (c *Config) readConfig() error {
 		Port: "5432",
 		Database: "enigma_laundry",
 		Username: "postgres",
-		Password: "328558",
+		Password: "2001",
 		Driver: "postgres",
 	}
 
