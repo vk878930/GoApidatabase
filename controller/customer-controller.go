@@ -32,12 +32,13 @@ func (cu *CustomerController) createNewCust (c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
 	}
 
 	customer, err := cu.useCase.CreateNewCust(payload)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"err": "Failed to create customer data"})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 
@@ -66,7 +67,7 @@ func (cu *CustomerController) getCustByID (c *gin.Context) {
 	customer, err := cu.useCase.GetCustByID(id)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"err": "Failed to get Customer by ID"})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 
