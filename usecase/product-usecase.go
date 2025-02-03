@@ -22,6 +22,14 @@ type ProductUseCase interface {
 
 // CreateNewProduct handles the business logic for creating a new product
 func (pd *productUsecase) CreateNewProduct(product model.Product) (model.Product, error) {
+
+	isUnique, err := pd.repo.IsProductNameUnique(product.Name)
+	if err != nil {
+		return model.Product{}, fmt.Errorf("error checking product name uniqueness: %v", err)
+	}
+	if !isUnique {
+		return model.Product{}, fmt.Errorf("product name '%s' already exists", product.Name)
+	}
 	return pd.repo.CreateNewProduct(product)
 }
 
@@ -38,9 +46,19 @@ func (pd *productUsecase) GetProductByID(id int) (model.Product, error) {
 // UpdateProductByID updates the details of an existing product
 func (pd *productUsecase) UpdateProductByID(product model.Product) (model.Product, error) {
 	// Check if the product exists before updating
-	_, err := pd.repo.GetProductByID(product.Product_id)
+	existingProduct, err := pd.repo.GetProductByID(product.Product_id)
 	if err != nil {
 		return model.Product{}, fmt.Errorf("product with ID %d not found", product.Product_id)
+	}
+
+	if product.Name != existingProduct.Name {
+		isUnique, err := pd.repo.IsProductNameUnique(product.Name)
+		if err != nil {
+			return model.Product{}, fmt.Errorf("error checking product name uniqueness: %v", err)
+		}
+		if !isUnique {
+			return model.Product{}, fmt.Errorf("product name '%s' already exists", product.Name)
+		}
 	}
 
 	return pd.repo.UpdateProductByID(product)

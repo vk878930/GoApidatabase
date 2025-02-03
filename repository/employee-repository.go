@@ -51,6 +51,8 @@ func (ep *employeeRepository) GetAllEmployee() ([]model.Employee, error) {
 		return nil, err
 	}
 
+	defer rows.Close()
+
 	for rows.Next() {
 		var employee model.Employee
 
@@ -59,8 +61,6 @@ func (ep *employeeRepository) GetAllEmployee() ([]model.Employee, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer rows.Close()
-
 		employees = append(employees, employee)
 	}
 	return employees, nil
