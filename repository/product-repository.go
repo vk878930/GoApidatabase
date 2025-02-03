@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"submission-project-enigma-laundry/model"
+	"fmt"
 )
 
 // productRepository struct implements the ProductRepository interface
@@ -17,6 +18,7 @@ type ProductRepository interface {
 	GetProductByID(id int) (model.Product, error)
 	UpdateProductByID(product model.Product) (model.Product, error)
 	DeleteProductByID(id int) error
+	IsProductNameUnique(name string) (bool, error) // Check if product name is unique
 }
 
 // CreateNewProduct inserts a new product into the database and returns the created product
@@ -56,8 +58,6 @@ func (pr *productRepository) GetAllProduct() ([]model.Product, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer rows.Close()
-
 		products = append(products, product)
 	}
 
@@ -101,6 +101,15 @@ func (pr *productRepository) DeleteProductByID(id int) error {
 		return err
 	}
 	return nil
+}
+
+func (pr *productRepository) IsProductNameUnique(name string) (bool, error) {
+	var count int
+	err := pr.db.QueryRow("SELECT COUNT(*) FROM product WHERE name = $1", name).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("failed to check product name uniqueness: %w", err)
+	}
+	return count == 0, nil
 }
 
 // NewProductRepository creates a new instance of productRepository with the given database connection

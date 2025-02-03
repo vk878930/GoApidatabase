@@ -65,6 +65,7 @@ func (cu *customerRepository) GetAllCust() ([]model.Customer, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	//mengiterasi tiap row dalam result set. rows.Next() mempersiapkan row selanjutnya untuk dibaca. dia mereturn true jika ada row lagi, atau false jika tidak ada row lagi atau  error occurred during iteration.
 	for rows.Next() {
@@ -75,8 +76,6 @@ func (cu *customerRepository) GetAllCust() ([]model.Customer, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer rows.Close()
-
 		customers = append(customers, customer)
 	}
 	return customers, nil
