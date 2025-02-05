@@ -104,12 +104,22 @@ func (pr *productRepository) DeleteProductByID(id int) error {
 }
 
 func (pr *productRepository) IsProductNameUnique(name string) (bool, error) {
-	var count int
-	err := pr.db.QueryRow("SELECT COUNT(*) FROM product WHERE name = $1", name).Scan(&count)
+	var exists bool
+	// Optimized query with EXISTS and LIMIT 1
+	query := `
+		SELECT EXISTS(
+			SELECT 1
+			FROM product
+			WHERE name = $1
+			LIMIT 1
+		);
+	`
+	err := pr.db.QueryRow(query, name).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("failed to check product name uniqueness: %w", err)
 	}
-	return count == 0, nil
+	// If it exists, the name is not unique
+	return !exists, nil
 }
 
 // NewProductRepository creates a new instance of productRepository with the given database connection
