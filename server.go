@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"submission-project-enigma-laundry/config"
 	"submission-project-enigma-laundry/controller"
+	"submission-project-enigma-laundry/middleware"
 	"submission-project-enigma-laundry/repository"
 	"submission-project-enigma-laundry/usecase"
+	"submission-project-enigma-laundry/utils/service"
 
 	"database/sql"
 
@@ -18,17 +20,24 @@ type Server struct {
 	productUC     usecase.ProductUseCase
 	employeeUC    usecase.EmployeeUseCase
 	customerUC    usecase.CustUseCase
+	userUC 	  usecase.UserUseCase
+	authUc usecase.AuthenticationUseCase
+	jwtService    service.JwtService
+
 	engine        *gin.Engine
 	host          string
 }
 
 func (s *Server) initRoute() {
 	rg := s.engine.Group("/api/v1")
+	authMiddleware := middleware.NewAuthMiddleware(s.jwtService)
 
 	controller.NewCustController(s.customerUC, rg).Route()
 	controller.NewEmployeeController(s.employeeUC, rg).Route()
 	controller.NewProductController(s.productUC, rg).Route()
-	controller.NewTransactionController(s.transactionUC, rg).Route()
+	controller.NewTransactionController(s.transactionUC, rg, authMiddleware).Route()
+	controller.NewUserController(s.userUC, rg, authMiddleware).Route()
+	controller.NewAuthController(s.authUc, rg).Route()
 }
 
 func (s *Server) Run() {
@@ -64,6 +73,12 @@ func NewServer() *Server {
 	transactionRepo := repository.NewTransactionRepository(db, custRepo, employeeRepo)
 	transactionUseCase := usecase.NewTransactionUseCase(transactionRepo)
 
+	userRepo := repository.NewUserRepository(db)
+	userUseCase := usecase.NewUserUseCase(userRepo)
+
+	jwtService := service.NewJwtService(cfg.TokenConfig)
+	authUseCase := usecase.NewAuthenticationUseCase(userUseCase, jwtService)
+
 	engine := gin.Default()
 	host := fmt.Sprintf(":%s", cfg.ApiPort)
 
@@ -72,6 +87,9 @@ func NewServer() *Server {
 		productUC:     productUseCase,
 		employeeUC:    employeeUseCase,
 		customerUC:    customerUseCase,
+		userUC:        userUseCase,
+		authUc:        authUseCase,
+		jwtService:	jwtService,
 		engine:        engine,
 		host:          host,
 	}

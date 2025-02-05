@@ -47,3 +47,10 @@ CREATE TABLE bill_details (
     FOREIGN KEY (transaction_id) REFERENCES transaction(transaction_id),
     FOREIGN KEY (product_id) REFERENCES product(product_id)
 );
+
+CREATE TABLE users (
+id SERIAL PRIMARY KEY,
+username VARCHAR(255) NOT NULL,
+password VARCHAR(255) NOT NULL,
+role VARCHAR(255) NOT NULL
+);

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"submission-project-enigma-laundry/model"
 	"submission-project-enigma-laundry/usecase"
+	"submission-project-enigma-laundry/middleware"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -13,13 +14,14 @@ import (
 type TransactionController struct {
 	useCase usecase.TransactionUseCase
 	rg      *gin.RouterGroup
+	authMiddleware middleware.AuthMiddleware
 }
 
 // Route defines the transaction-related HTTP routes
 func (tc *TransactionController) Route() {
-	tc.rg.POST("/transactions", tc.createNewTransaction)     // POST request to create a new transaction
-	tc.rg.GET("/transactions", tc.getAllTransactions)        // GET request to retrieve all transactions
-	tc.rg.GET("/transactions/:id", tc.getTransactionByID)    // GET request to retrieve a single transaction by ID
+	tc.rg.POST("/transactions", tc.authMiddleware.RequireToken("admin") , tc.createNewTransaction)     // POST request to create a new transaction
+	tc.rg.GET("/transactions", tc.authMiddleware.RequireToken("admin"), tc.getAllTransactions)        // GET request to retrieve all transactions
+	tc.rg.GET("/transactions/:id", tc.authMiddleware.RequireToken("admin"), tc.getTransactionByID)    // GET request to retrieve a single transaction by ID
 }
 
 // createNewTransaction handles the creation of a new transaction
@@ -76,6 +78,6 @@ func (tc *TransactionController) getTransactionByID(c *gin.Context) {
 }
 
 // NewTransactionController creates a new instance of TransactionController with the given usecase and router group
-func NewTransactionController(useCase usecase.TransactionUseCase, rg *gin.RouterGroup) *TransactionController {
-	return &TransactionController{useCase: useCase, rg: rg}
+func NewTransactionController(useCase usecase.TransactionUseCase, rg *gin.RouterGroup, am middleware.AuthMiddleware) *TransactionController {
+	return &TransactionController{useCase: useCase, rg: rg, authMiddleware: am}
 }

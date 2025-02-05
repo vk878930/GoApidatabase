@@ -37,7 +37,7 @@ func (pc *ProductController) createNewProduct(c *gin.Context) {
 
 	product, err := pc.useCase.CreateNewProduct(payload)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"err": "Failed to create product"})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 
