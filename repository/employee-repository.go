@@ -100,12 +100,22 @@ func (ep *employeeRepository) DeleteEmployeeByID(id int) error {
 }
 
 func (ep *employeeRepository) IsPhoneNumberUnique(phoneNumber string) (bool, error) {
-	var count int
-	err := ep.db.QueryRow("SELECT COUNT(*) FROM employee WHERE phone = $1", phoneNumber).Scan(&count)
+	var exists bool
+	// Optimized query with EXISTS and LIMIT 1
+	query := `
+		SELECT EXISTS(
+			SELECT 1
+			FROM employee
+			WHERE phone = $1
+			LIMIT 1
+		);
+	`
+	err := ep.db.QueryRow(query, phoneNumber).Scan(&exists)
 	if err != nil {
 		return false, err
 	}
-	return count == 0, nil
+	// If it exists, the phone number is not unique
+	return !exists, nil
 }
 
 func NewEmployeeRepository(db *sql.DB) EmployeeRepository {
